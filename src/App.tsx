@@ -9,11 +9,28 @@ import { ActiveWorkout } from './pages/ActiveWorkout';
 import { History } from './pages/History';
 import { Settings } from './pages/Settings';
 import { ensureSeed } from './db/db';
+import { useAuth } from './hooks/useAuth';
+import { syncNow } from './lib/sync';
 
 export default function App() {
+  const { user } = useAuth();
+
   useEffect(() => {
     ensureSeed().catch(console.error);
   }, []);
+
+  // Trigger sync on login, on focus, and every 5 minutes while logged in.
+  useEffect(() => {
+    if (!user) return;
+    syncNow();
+    const onFocus = () => syncNow();
+    window.addEventListener('focus', onFocus);
+    const iv = setInterval(() => syncNow(), 5 * 60 * 1000);
+    return () => {
+      window.removeEventListener('focus', onFocus);
+      clearInterval(iv);
+    };
+  }, [user]);
 
   return (
     <Routes>

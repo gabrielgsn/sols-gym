@@ -21,6 +21,8 @@ export interface Exercise {
   muscleGroup: MuscleGroup;
   notes?: string;
   createdAt: number;
+  updatedAt: number;
+  deletedAt?: number;
 }
 
 export interface WorkoutTemplate {
@@ -29,6 +31,7 @@ export interface WorkoutTemplate {
   exerciseIds: string[];
   createdAt: number;
   updatedAt: number;
+  deletedAt?: number;
 }
 
 export interface WorkoutSession {
@@ -38,6 +41,8 @@ export interface WorkoutSession {
   startedAt: number;
   finishedAt?: number;
   notes?: string;
+  updatedAt: number;
+  deletedAt?: number;
 }
 
 export interface SetEntry {
@@ -49,4 +54,6 @@ export interface SetEntry {
   reps: number;
   rir: number;
   completedAt: number;
+  updatedAt: number;
+  deletedAt?: number;
 }

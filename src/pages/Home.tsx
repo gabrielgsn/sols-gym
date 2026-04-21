@@ -5,13 +5,13 @@ import { db, dbHelpers } from '../db/db';
 export function Home() {
   const nav = useNavigate();
   const templates = useLiveQuery(
-    () => db.templates.orderBy('updatedAt').reverse().toArray(),
+    () => db.templates.orderBy('updatedAt').reverse().filter((t) => !t.deletedAt).toArray(),
     [],
   );
   const active = useLiveQuery(
     () =>
       db.sessions
-        .filter((s) => !s.finishedAt)
+        .filter((s) => !s.finishedAt && !s.deletedAt)
         .reverse()
         .sortBy('startedAt')
         .then((arr) => arr[0]),

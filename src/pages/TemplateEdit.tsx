@@ -8,7 +8,10 @@ export function TemplateEdit() {
   const { id } = useParams<{ id: string }>();
   const nav = useNavigate();
   const template = useLiveQuery(() => (id ? db.templates.get(id) : undefined), [id]);
-  const exercises = useLiveQuery(() => db.exercises.toArray(), []);
+  const exercises = useLiveQuery(
+    () => db.exercises.filter((e) => !e.deletedAt).toArray(),
+    [],
+  );
   const [name, setName] = useState('');
   const [ids, setIds] = useState<string[]>([]);
   const [picking, setPicking] = useState(false);

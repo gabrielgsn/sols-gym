@@ -18,10 +18,13 @@ function fmtDuration(start: number, end?: number) {
 
 export function History() {
   const sessions = useLiveQuery(
-    () => db.sessions.orderBy('startedAt').reverse().toArray(),
+    () => db.sessions.orderBy('startedAt').reverse().filter((s) => !s.deletedAt).toArray(),
     [],
   );
-  const allSets = useLiveQuery(() => db.sets.toArray(), []);
+  const allSets = useLiveQuery(
+    () => db.sets.filter((s) => !s.deletedAt).toArray(),
+    [],
+  );
 
   const setsBySession = new Map<string, SetEntry[]>();
   for (const s of allSets ?? []) {

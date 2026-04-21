@@ -10,7 +10,10 @@ type Props = {
 };
 
 export function ExercisePicker({ selectedIds, onToggle, onClose }: Props) {
-  const exercises = useLiveQuery(() => db.exercises.orderBy('name').toArray(), []);
+  const exercises = useLiveQuery(
+    () => db.exercises.orderBy('name').filter((e) => !e.deletedAt).toArray(),
+    [],
+  );
   const [q, setQ] = useState('');
 
   const filtered = useMemo(() => {

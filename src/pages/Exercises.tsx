@@ -4,7 +4,10 @@ import { db, dbHelpers } from '../db/db';
 import { MUSCLE_GROUPS, type Exercise, type MuscleGroup } from '../db/schema';
 
 export function Exercises() {
-  const exercises = useLiveQuery(() => db.exercises.orderBy('name').toArray(), []);
+  const exercises = useLiveQuery(
+    () => db.exercises.orderBy('name').filter((e) => !e.deletedAt).toArray(),
+    [],
+  );
   const [editing, setEditing] = useState<Exercise | null>(null);
   const [showForm, setShowForm] = useState(false);
 

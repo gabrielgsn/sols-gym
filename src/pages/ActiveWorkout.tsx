@@ -31,9 +31,15 @@ export function ActiveWorkout() {
     () => (session?.templateId ? db.templates.get(session.templateId) : undefined),
     [session?.templateId],
   );
-  const exercises = useLiveQuery(() => db.exercises.toArray(), []);
+  const exercises = useLiveQuery(
+    () => db.exercises.filter((e) => !e.deletedAt).toArray(),
+    [],
+  );
   const setsInSession = useLiveQuery(
-    () => (id ? db.sets.where('sessionId').equals(id).toArray() : []),
+    () =>
+      id
+        ? db.sets.where('sessionId').equals(id).filter((s) => !s.deletedAt).toArray()
+        : [],
     [id],
   );
 

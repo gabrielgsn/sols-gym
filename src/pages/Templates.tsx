@@ -5,7 +5,7 @@ import { db, dbHelpers } from '../db/db';
 
 export function Templates() {
   const templates = useLiveQuery(
-    () => db.templates.orderBy('updatedAt').reverse().toArray(),
+    () => db.templates.orderBy('updatedAt').reverse().filter((t) => !t.deletedAt).toArray(),
     [],
   );
   const [newName, setNewName] = useState('');

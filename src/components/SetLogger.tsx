@@ -15,6 +15,7 @@ export function SetLogger({ sessionId, exercise }: Props) {
       db.sets
         .where('[sessionId+exerciseId]')
         .equals([sessionId, exercise.id])
+        .filter((s) => !s.deletedAt)
         .sortBy('setIndex'),
     [sessionId, exercise.id],
   ) as SetEntry[] | undefined;

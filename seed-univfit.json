@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "exportedAt": 1776715200000,
+  "exercises": [
+    { "id": "ex-pl-lat-pulldown",   "name": "PL Lat Pulldown",    "muscleGroup": "costas",      "notes": "kg por lado",        "createdAt": 1776542400000 },
+    { "id": "ex-recline-curls",     "name": "Recline Curls",      "muscleGroup": "biceps",                                    "createdAt": 1776542400000 },
+    { "id": "ex-pl-transverse-row", "name": "PL Transverse Row",  "muscleGroup": "costas",                                    "createdAt": 1776542400000 },
+    { "id": "ex-kelso-shrugs",      "name": "Kelso Shrugs",       "muscleGroup": "costas",      "notes": "trapézio",          "createdAt": 1776542400000 },
+    { "id": "ex-sldl",              "name": "SLDL",               "muscleGroup": "gluteo",      "notes": "Stiff-Legged DL",   "createdAt": 1776542400000 },
+    { "id": "ex-calves",            "name": "Calves",             "muscleGroup": "panturrilha", "notes": "kg por lado",        "createdAt": 1776542400000 },
+    { "id": "ex-leg-curls",         "name": "Leg Curls",          "muscleGroup": "perna",       "notes": "posterior de coxa", "createdAt": 1776542400000 },
+    { "id": "ex-shoulder-press",    "name": "Shoulder Press",     "muscleGroup": "ombro",                                     "createdAt": 1776542400000 },
+    { "id": "ex-adductor",          "name": "Adductor",           "muscleGroup": "perna",       "notes": "adutor",            "createdAt": 1776542400000 },
+    { "id": "ex-smith-bench",       "name": "Smith Bench",        "muscleGroup": "peito",                                     "createdAt": 1776542400000 },
+    { "id": "ex-leg-press",         "name": "Leg Press",          "muscleGroup": "perna",       "notes": "kg por lado",        "createdAt": 1776542400000 },
+    { "id": "ex-long-head-ext",     "name": "Long Head Extension","muscleGroup": "triceps",                                   "createdAt": 1776542400000 },
+    { "id": "ex-lateral-raises",    "name": "Lateral Raises",     "muscleGroup": "ombro",                                     "createdAt": 1776542400000 },
+    { "id": "ex-dips",              "name": "Dips",               "muscleGroup": "triceps",                                   "createdAt": 1776542400000 },
+    { "id": "ex-abs",               "name": "Abs",                "muscleGroup": "core",                                      "createdAt": 1776542400000 }
+  ],
+  "templates": [
+    {
+      "id": "tpl-posterior",
+      "name": "Posterior Univ-Fit",
+      "exerciseIds": [
+        "ex-pl-lat-pulldown",
+        "ex-recline-curls",
+        "ex-pl-transverse-row",
+        "ex-kelso-shrugs",
+        "ex-sldl",
+        "ex-calves",
+        "ex-leg-curls"
+      ],
+      "createdAt": 1776542400000,
+      "updatedAt": 1776542400000
+    },
+    {
+      "id": "tpl-anterior",
+      "name": "Anterior Univ-Fit",
+      "exerciseIds": [
+        "ex-shoulder-press",
+        "ex-adductor",
+        "ex-smith-bench",
+        "ex-leg-press",
+        "ex-long-head-ext",
+        "ex-lateral-raises",
+        "ex-dips",
+        "ex-abs"
+      ],
+      "createdAt": 1776715200000,
+      "updatedAt": 1776715200000
+    }
+  ],
+  "sessions": [
+    {
+      "id": "sess-posterior-1",
+      "templateId": "tpl-posterior",
+      "name": "Posterior Univ-Fit",
+      "startedAt": 1776542400000,
+      "finishedAt": 1776546000000
+    },
+    {
+      "id": "sess-anterior-1",
+      "templateId": "tpl-anterior",
+      "name": "Anterior Univ-Fit",
+      "startedAt": 1776715200000,
+      "finishedAt": 1776718800000
+    }
+  ],
+  "sets": [
+    { "id": "s-p-01", "sessionId": "sess-posterior-1", "exerciseId": "ex-pl-lat-pulldown",   "setIndex": 1, "weight": 65,  "reps": 7,  "rir": 1, "completedAt": 1776542700000 },
+    { "id": "s-p-02", "sessionId": "sess-posterior-1", "exerciseId": "ex-pl-lat-pulldown",   "setIndex": 2, "weight": 65,  "reps": 6,  "rir": 0, "completedAt": 1776542880000 },
+    { "id": "s-p-03", "sessionId": "sess-posterior-1", "exerciseId": "ex-recline-curls",     "setIndex": 1, "weight": 20,  "reps": 5,  "rir": 1, "completedAt": 1776543060000 },
+    { "id": "s-p-04", "sessionId": "sess-posterior-1", "exerciseId": "ex-recline-curls",     "setIndex": 2, "weight": 20,  "reps": 5,  "rir": 0, "completedAt": 1776543240000 },
+    { "id": "s-p-05", "sessionId": "sess-posterior-1", "exerciseId": "ex-pl-transverse-row", "setIndex": 1, "weight": 70,  "reps": 8,  "rir": 1, "completedAt": 1776543420000 },
+    { "id": "s-p-06", "sessionId": "sess-posterior-1", "exerciseId": "ex-pl-transverse-row", "setIndex": 2, "weight": 70,  "reps": 7,  "rir": 0, "completedAt": 1776543600000 },
+    { "id": "s-p-07", "sessionId": "sess-posterior-1", "exerciseId": "ex-kelso-shrugs",      "setIndex": 1, "weight": 80,  "reps": 8,  "rir": 1, "completedAt": 1776543780000 },
+    { "id": "s-p-08", "sessionId": "sess-posterior-1", "exerciseId": "ex-kelso-shrugs",      "setIndex": 2, "weight": 80,  "reps": 8,  "rir": 0, "completedAt": 1776543960000 },
+    { "id": "s-p-09", "sessionId": "sess-posterior-1", "exerciseId": "ex-sldl",              "setIndex": 1, "weight": 130, "reps": 6,  "rir": 0, "completedAt": 1776544140000 },
+    { "id": "s-p-10", "sessionId": "sess-posterior-1", "exerciseId": "ex-calves",            "setIndex": 1, "weight": 85,  "reps": 10, "rir": 0, "completedAt": 1776544320000 },
+    { "id": "s-p-11", "sessionId": "sess-posterior-1", "exerciseId": "ex-calves",            "setIndex": 2, "weight": 85,  "reps": 10, "rir": 0, "completedAt": 1776544500000 },
+    { "id": "s-p-12", "sessionId": "sess-posterior-1", "exerciseId": "ex-leg-curls",         "setIndex": 1, "weight": 50,  "reps": 6,  "rir": 0, "completedAt": 1776544680000 },
+
+    { "id": "s-a-01", "sessionId": "sess-anterior-1",  "exerciseId": "ex-shoulder-press",    "setIndex": 1, "weight": 55,   "reps": 8,  "rir": 0, "completedAt": 1776715500000 },
+    { "id": "s-a-02", "sessionId": "sess-anterior-1",  "exerciseId": "ex-shoulder-press",    "setIndex": 2, "weight": 57.5, "reps": 6,  "rir": 0, "completedAt": 1776715680000 },
+    { "id": "s-a-03", "sessionId": "sess-anterior-1",  "exerciseId": "ex-adductor",          "setIndex": 1, "weight": 70,   "reps": 10, "rir": 2, "completedAt": 1776715860000 },
+    { "id": "s-a-04", "sessionId": "sess-anterior-1",  "exerciseId": "ex-adductor",          "setIndex": 2, "weight": 70,   "reps": 10, "rir": 2, "completedAt": 1776716040000 },
+    { "id": "s-a-05", "sessionId": "sess-anterior-1",  "exerciseId": "ex-smith-bench",       "setIndex": 1, "weight": 35,   "reps": 6,  "rir": 1, "completedAt": 1776716220000 },
+    { "id": "s-a-06", "sessionId": "sess-anterior-1",  "exerciseId": "ex-smith-bench",       "setIndex": 2, "weight": 35,   "reps": 6,  "rir": 0, "completedAt": 1776716400000 },
+    { "id": "s-a-07", "sessionId": "sess-anterior-1",  "exerciseId": "ex-leg-press",         "setIndex": 1, "weight": 80,   "reps": 8,  "rir": 1, "completedAt": 1776716580000 },
+    { "id": "s-a-08", "sessionId": "sess-anterior-1",  "exerciseId": "ex-long-head-ext",     "setIndex": 1, "weight": 20,   "reps": 7,  "rir": 0, "completedAt": 1776716760000 },
+    { "id": "s-a-09", "sessionId": "sess-anterior-1",  "exerciseId": "ex-long-head-ext",     "setIndex": 2, "weight": 20,   "reps": 6,  "rir": 0, "completedAt": 1776716940000 },
+    { "id": "s-a-10", "sessionId": "sess-anterior-1",  "exerciseId": "ex-lateral-raises",    "setIndex": 1, "weight": 17.5, "reps": 6,  "rir": 0, "completedAt": 1776717120000 },
+    { "id": "s-a-11", "sessionId": "sess-anterior-1",  "exerciseId": "ex-lateral-raises",    "setIndex": 2, "weight": 15,   "reps": 7,  "rir": 0, "completedAt": 1776717300000 },
+    { "id": "s-a-12", "sessionId": "sess-anterior-1",  "exerciseId": "ex-dips",              "setIndex": 1, "weight": 20,   "reps": 7,  "rir": 0, "completedAt": 1776717480000 },
+    { "id": "s-a-13", "sessionId": "sess-anterior-1",  "exerciseId": "ex-abs",               "setIndex": 1, "weight": 50,   "reps": 10, "rir": 1, "completedAt": 1776717660000 },
+    { "id": "s-a-14", "sessionId": "sess-anterior-1",  "exerciseId": "ex-abs",               "setIndex": 2, "weight": 55,   "reps": 8,  "rir": 0, "completedAt": 1776717840000 }
+  ]
+}

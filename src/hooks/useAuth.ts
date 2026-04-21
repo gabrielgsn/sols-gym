@@ -35,6 +35,18 @@ export async function sendMagicLink(email: string, redirectTo: string) {
   if (error) throw error;
 }
 
+// Verify 6-digit code from email. Works inside an installed PWA where the
+// magic-link URL would otherwise open in Safari instead of the PWA.
+export async function verifyEmailOtp(email: string, token: string) {
+  if (!supabase) throw new Error('Supabase não configurado');
+  const { error } = await supabase.auth.verifyOtp({
+    email,
+    token: token.trim(),
+    type: 'email',
+  });
+  if (error) throw error;
+}
+
 export async function signOut() {
   if (!supabase) return;
   await supabase.auth.signOut();

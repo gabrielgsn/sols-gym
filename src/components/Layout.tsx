@@ -12,7 +12,13 @@ const tabs = [
 export function Layout() {
   return (
     <div className="flex flex-col min-h-full">
-      <main className="flex-1 pb-24 px-4 pt-4 max-w-xl w-full mx-auto">
+      <main
+        className="flex-1 px-4 max-w-xl w-full mx-auto"
+        style={{
+          paddingTop: 'calc(env(safe-area-inset-top) + 1rem)',
+          paddingBottom: 'calc(env(safe-area-inset-bottom) + 6rem)',
+        }}
+      >
         <Outlet />
       </main>
       <nav

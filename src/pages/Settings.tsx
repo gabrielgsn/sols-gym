@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { dbHelpers } from '../db/db';
-import { sendMagicLink, signOut, useAuth } from '../hooks/useAuth';
+import { sendMagicLink, signOut, useAuth, verifyEmailOtp } from '../hooks/useAuth';
 import { onSyncStatus, resetSyncCursors, syncNow, type SyncStatus } from '../lib/sync';
 
 function fmtDate(ts?: number) {
@@ -13,6 +13,8 @@ export function Settings() {
   const [ioStatus, setIoStatus] = useState<string | null>(null);
   const { user, ready, configured } = useAuth();
   const [email, setEmail] = useState('');
+  const [otp, setOtp] = useState('');
+  const [codeSent, setCodeSent] = useState(false);
   const [authMsg, setAuthMsg] = useState<string | null>(null);
   const [authBusy, setAuthBusy] = useState(false);
   const [sync, setSync] = useState<SyncStatus>({ state: 'idle' });
@@ -60,7 +62,25 @@ export function Settings() {
     setAuthMsg(null);
     try {
       await sendMagicLink(email.trim(), window.location.origin);
-      setAuthMsg(`Link enviado pra ${email}. Abra seu email.`);
+      setCodeSent(true);
+      setAuthMsg(`Código enviado pra ${email}. Copie o código de 6 dígitos do email.`);
+    } catch (e) {
+      setAuthMsg(`Erro: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      setAuthBusy(false);
+    }
+  }
+
+  async function onVerifyOtp() {
+    const token = otp.trim();
+    if (!token || !email.trim()) return;
+    setAuthBusy(true);
+    setAuthMsg(null);
+    try {
+      await verifyEmailOtp(email.trim(), token);
+      setAuthMsg('Logado!');
+      setOtp('');
+      setCodeSent(false);
     } catch (e) {
       setAuthMsg(`Erro: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
@@ -81,21 +101,61 @@ export function Settings() {
           {ready && !user && (
             <>
               <p className="text-sm text-slate-400">
-                Entre com email pra sincronizar entre celular e PC. Sem senha — link mágico.
+                Entre com email pra sincronizar entre celular e PC. Você recebe um código de 6 dígitos — cole ele aqui.
               </p>
               <div className="flex gap-2">
                 <input
                   className="input flex-1"
                   type="email"
+                  autoComplete="email"
+                  inputMode="email"
                   placeholder="seu@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  disabled={authBusy}
+                  disabled={authBusy || codeSent}
                 />
-                <button className="btn-primary" onClick={onMagicLink} disabled={authBusy || !email.trim()}>
-                  {authBusy ? '...' : 'Enviar link'}
+                <button
+                  className="btn-primary"
+                  onClick={onMagicLink}
+                  disabled={authBusy || !email.trim()}
+                >
+                  {authBusy ? '...' : codeSent ? 'Reenviar' : 'Enviar código'}
                 </button>
               </div>
+
+              {codeSent && (
+                <div className="flex gap-2">
+                  <input
+                    className="input flex-1 font-mono tracking-widest text-center"
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    placeholder="123456"
+                    maxLength={6}
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
+                    disabled={authBusy}
+                  />
+                  <button
+                    className="btn-primary"
+                    onClick={onVerifyOtp}
+                    disabled={authBusy || otp.trim().length < 6}
+                  >
+                    {authBusy ? '...' : 'Verificar'}
+                  </button>
+                </div>
+              )}
+
+              {codeSent && (
+                <button
+                  className="btn-ghost text-xs self-start"
+                  onClick={() => { setCodeSent(false); setOtp(''); setAuthMsg(null); }}
+                  disabled={authBusy}
+                >
+                  Trocar email
+                </button>
+              )}
+
               {authMsg && <p className="text-xs text-slate-400">{authMsg}</p>}
             </>
           )}

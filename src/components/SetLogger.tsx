@@ -74,7 +74,7 @@ export function SetLogger({ sessionId, exercise }: Props) {
         </ul>
       )}
 
-      <div onPointerDown={() => setTouched(true)} className="grid grid-cols-3 gap-2">
+      <div onPointerDown={() => setTouched(true)} className="grid grid-cols-3 gap-2 min-w-0">
         <NumberStepper label="Peso" value={weight} onChange={setWeight} step={2.5} decimals={1} suffix="kg" />
         <NumberStepper label="Reps" value={reps} onChange={setReps} step={1} />
         <NumberStepper label="RIR" value={rir} onChange={setRir} step={1} min={0} max={10} />

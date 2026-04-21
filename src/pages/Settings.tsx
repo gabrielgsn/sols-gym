@@ -101,7 +101,7 @@ export function Settings() {
           {ready && !user && (
             <>
               <p className="text-sm text-slate-400">
-                Entre com email pra sincronizar entre celular e PC. Você recebe um código de 6 dígitos — cole ele aqui.
+                Entre com email pra sincronizar entre celular e PC. Você recebe um código no email — cole ele aqui.
               </p>
               <div className="flex gap-2">
                 <input
@@ -130,8 +130,8 @@ export function Settings() {
                     type="text"
                     inputMode="numeric"
                     autoComplete="one-time-code"
-                    placeholder="123456"
-                    maxLength={6}
+                    placeholder="12345678"
+                    maxLength={10}
                     value={otp}
                     onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
                     disabled={authBusy}

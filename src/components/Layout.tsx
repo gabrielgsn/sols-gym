@@ -4,7 +4,8 @@ const tabs = [
   { to: '/', label: 'Início', icon: '🏠' },
   { to: '/templates', label: 'Rotinas', icon: '📋' },
   { to: '/exercises', label: 'Exerc.', icon: '🏋️' },
-  { to: '/history', label: 'Histórico', icon: '📈' },
+  { to: '/progress', label: 'Progresso', icon: '📈' },
+  { to: '/history', label: 'Histórico', icon: '📚' },
   { to: '/settings', label: 'Config', icon: '⚙️' },
 ];
 
@@ -18,7 +19,7 @@ export function Layout() {
         className="fixed bottom-0 inset-x-0 bg-slate-900/95 backdrop-blur border-t border-slate-800"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
-        <ul className="grid grid-cols-5 max-w-xl mx-auto">
+        <ul className="grid grid-cols-6 max-w-xl mx-auto">
           {tabs.map((t) => (
             <li key={t.to}>
               <NavLink

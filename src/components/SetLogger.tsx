@@ -1,7 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState } from 'react';
 import { db, dbHelpers } from '../db/db';
-import type { Exercise, SetEntry } from '../db/schema';
+import { MUSCLE_GROUP_LABELS, type Exercise, type SetEntry } from '../db/schema';
 import { NumberStepper } from './NumberStepper';
 
 type Props = {
@@ -54,7 +54,7 @@ export function SetLogger({ sessionId, exercise }: Props) {
     <div className="card flex flex-col gap-3">
       <div>
         <div className="font-semibold">{exercise.name}</div>
-        <div className="text-xs text-slate-400 capitalize">{exercise.muscleGroup}</div>
+        <div className="text-xs text-slate-400">{MUSCLE_GROUP_LABELS[exercise.muscleGroup]}</div>
       </div>
 
       {sets && sets.length > 0 && (

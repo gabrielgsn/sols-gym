@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie';
-import type { Exercise, SetEntry, WorkoutSession, WorkoutTemplate } from './schema';
+import type { BodyWeight, Exercise, SetEntry, WorkoutSession, WorkoutTemplate } from './schema';
 import { uid } from '../lib/id';
 
 class SolsGymDB extends Dexie {
@@ -7,6 +7,7 @@ class SolsGymDB extends Dexie {
   templates!: Table<WorkoutTemplate, string>;
   sessions!: Table<WorkoutSession, string>;
   sets!: Table<SetEntry, string>;
+  bodyWeights!: Table<BodyWeight, string>;
 
   constructor() {
     super('sols-gym');
@@ -34,32 +35,64 @@ class SolsGymDB extends Dexie {
           });
         }
       });
+    this.version(3).stores({
+      bodyWeights: 'id, updatedAt, deletedAt',
+    });
+    this.version(4)
+      .stores({
+        exercises: 'id, name, muscleGroup, updatedAt, deletedAt',
+      })
+      .upgrade(async (tx) => {
+        // Remap old Portuguese groups → new English taxonomy.
+        // 'costas' → 'lats' and 'gluteo' → 'hamstrings' are best-guess;
+        // user can re-tag individual exercises (e.g. rows → traps, stiff → lower_back).
+        const map: Record<string, string> = {
+          peito: 'chest',
+          costas: 'lats',
+          ombro: 'shoulder',
+          biceps: 'biceps',
+          triceps: 'triceps',
+          perna: 'quads',
+          gluteo: 'hamstrings',
+          panturrilha: 'calves',
+          core: 'abs',
+          outro: 'abs',
+        };
+        const ts = Date.now();
+        await tx.table('exercises').toCollection().modify((row: { muscleGroup?: string; updatedAt?: number }) => {
+          const current = row.muscleGroup;
+          if (current && map[current]) {
+            row.muscleGroup = map[current];
+            row.updatedAt = ts;
+          }
+        });
+      });
   }
 }
 
 export const db = new SolsGymDB();
 
 const SEED_EXERCISES: Array<Omit<Exercise, 'id' | 'createdAt' | 'updatedAt'>> = [
-  { name: 'Supino reto barra', muscleGroup: 'peito' },
-  { name: 'Supino inclinado halter', muscleGroup: 'peito' },
-  { name: 'Crucifixo máquina', muscleGroup: 'peito' },
-  { name: 'Puxada frente', muscleGroup: 'costas' },
-  { name: 'Remada curvada', muscleGroup: 'costas' },
-  { name: 'Remada baixa', muscleGroup: 'costas' },
-  { name: 'Desenvolvimento halter', muscleGroup: 'ombro' },
-  { name: 'Elevação lateral', muscleGroup: 'ombro' },
+  { name: 'Supino reto barra', muscleGroup: 'chest' },
+  { name: 'Supino inclinado halter', muscleGroup: 'chest' },
+  { name: 'Crucifixo máquina', muscleGroup: 'chest' },
+  { name: 'Puxada frente', muscleGroup: 'lats' },
+  { name: 'Remada curvada', muscleGroup: 'lats' },
+  { name: 'Remada baixa', muscleGroup: 'lats' },
+  { name: 'Desenvolvimento halter', muscleGroup: 'shoulder' },
+  { name: 'Elevação lateral', muscleGroup: 'shoulder' },
   { name: 'Rosca direta', muscleGroup: 'biceps' },
   { name: 'Rosca alternada', muscleGroup: 'biceps' },
   { name: 'Tríceps corda', muscleGroup: 'triceps' },
   { name: 'Tríceps francês', muscleGroup: 'triceps' },
-  { name: 'Agachamento livre', muscleGroup: 'perna' },
-  { name: 'Leg press', muscleGroup: 'perna' },
-  { name: 'Cadeira extensora', muscleGroup: 'perna' },
-  { name: 'Mesa flexora', muscleGroup: 'perna' },
-  { name: 'Stiff', muscleGroup: 'gluteo' },
-  { name: 'Elevação pélvica', muscleGroup: 'gluteo' },
-  { name: 'Panturrilha em pé', muscleGroup: 'panturrilha' },
-  { name: 'Abdominal prancha', muscleGroup: 'core' },
+  { name: 'Agachamento livre', muscleGroup: 'quads' },
+  { name: 'Leg press', muscleGroup: 'quads' },
+  { name: 'Cadeira extensora', muscleGroup: 'quads' },
+  { name: 'Mesa flexora', muscleGroup: 'hamstrings' },
+  { name: 'Stiff', muscleGroup: 'hamstrings' },
+  { name: 'Elevação pélvica', muscleGroup: 'hamstrings' },
+  { name: 'Panturrilha em pé', muscleGroup: 'calves' },
+  { name: 'Abdominal prancha', muscleGroup: 'abs' },
 ];
 
 export async function ensureSeed(): Promise<void> {
@@ -140,6 +173,24 @@ export const dbHelpers = {
     return db.sets.update(id, { deletedAt: now(), updatedAt: now() });
   },
 
+  async upsertBodyWeight(input: { date: string; kg: number; notes?: string }): Promise<BodyWeight> {
+    const ts = now();
+    const existing = await db.bodyWeights.get(input.date);
+    const row: BodyWeight = {
+      id: input.date,
+      kg: input.kg,
+      notes: input.notes,
+      createdAt: existing?.createdAt ?? ts,
+      updatedAt: ts,
+      deletedAt: undefined,
+    };
+    await db.bodyWeights.put(row);
+    return row;
+  },
+  deleteBodyWeight(id: string) {
+    return db.bodyWeights.update(id, { deletedAt: now(), updatedAt: now() });
+  },
+
   async lastSetFor(exerciseId: string): Promise<SetEntry | undefined> {
     return db.sets
       .where('exerciseId').equals(exerciseId)
@@ -150,14 +201,15 @@ export const dbHelpers = {
   },
 
   async exportJSON(): Promise<string> {
-    const [exercises, templates, sessions, sets] = await Promise.all([
+    const [exercises, templates, sessions, sets, bodyWeights] = await Promise.all([
       db.exercises.toArray(),
       db.templates.toArray(),
       db.sessions.toArray(),
       db.sets.toArray(),
+      db.bodyWeights.toArray(),
     ]);
     return JSON.stringify(
-      { version: 2, exportedAt: Date.now(), exercises, templates, sessions, sets },
+      { version: 3, exportedAt: Date.now(), exercises, templates, sessions, sets, bodyWeights },
       null,
       2,
     );
@@ -165,21 +217,23 @@ export const dbHelpers = {
 
   async importJSON(raw: string): Promise<void> {
     const data = JSON.parse(raw);
-    if (!data || (data.version !== 1 && data.version !== 2)) throw new Error('Formato inválido');
+    if (!data || ![1, 2, 3].includes(data.version)) throw new Error('Formato inválido');
     const ts = now();
     const patchTs = <T extends { updatedAt?: number; createdAt?: number }>(arr: T[]): T[] =>
       arr.map((r) => ({ ...r, updatedAt: r.updatedAt ?? r.createdAt ?? ts }));
-    await db.transaction('rw', db.exercises, db.templates, db.sessions, db.sets, async () => {
+    await db.transaction('rw', [db.exercises, db.templates, db.sessions, db.sets, db.bodyWeights], async () => {
       await Promise.all([
         db.exercises.clear(),
         db.templates.clear(),
         db.sessions.clear(),
         db.sets.clear(),
+        db.bodyWeights.clear(),
       ]);
       await db.exercises.bulkAdd(patchTs(data.exercises ?? []));
       await db.templates.bulkAdd(patchTs(data.templates ?? []));
       await db.sessions.bulkAdd(patchTs(data.sessions ?? []));
       await db.sets.bulkAdd(patchTs(data.sets ?? []));
+      await db.bodyWeights.bulkAdd(patchTs(data.bodyWeights ?? []));
     });
   },
 };
@@ -190,4 +244,5 @@ export const qry = {
   templates: () => db.templates.filter((t) => !t.deletedAt),
   sessions: () => db.sessions.filter((s) => !s.deletedAt),
   sets: () => db.sets.filter((s) => !s.deletedAt),
+  bodyWeights: () => db.bodyWeights.filter((b) => !b.deletedAt),
 };

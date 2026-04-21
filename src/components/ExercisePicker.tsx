@@ -1,7 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useMemo, useState } from 'react';
 import { db } from '../db/db';
-import type { Exercise } from '../db/schema';
+import { MUSCLE_GROUP_LABELS, type Exercise } from '../db/schema';
 
 type Props = {
   selectedIds: string[];
@@ -23,7 +23,8 @@ export function ExercisePicker({ selectedIds, onToggle, onClose }: Props) {
     return exercises.filter(
       (e: Exercise) =>
         e.name.toLowerCase().includes(term) ||
-        e.muscleGroup.toLowerCase().includes(term),
+        e.muscleGroup.toLowerCase().includes(term) ||
+        MUSCLE_GROUP_LABELS[e.muscleGroup].toLowerCase().includes(term),
     );
   }, [exercises, q]);
 
@@ -59,7 +60,7 @@ export function ExercisePicker({ selectedIds, onToggle, onClose }: Props) {
                 >
                   <div>
                     <div className="font-semibold">{e.name}</div>
-                    <div className="text-xs text-slate-400 capitalize">{e.muscleGroup}</div>
+                    <div className="text-xs text-slate-400">{MUSCLE_GROUP_LABELS[e.muscleGroup]}</div>
                   </div>
                   <span className="text-xl">{on ? '✓' : '＋'}</span>
                 </button>

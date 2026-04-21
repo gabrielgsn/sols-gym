@@ -1,5 +1,5 @@
 import { db } from '../db/db';
-import type { Exercise, SetEntry, WorkoutSession, WorkoutTemplate } from '../db/schema';
+import type { BodyWeight, Exercise, SetEntry, WorkoutSession, WorkoutTemplate } from '../db/schema';
 import { supabase } from './supabase';
 
 const LAST_PULL_KEY = 'sols-gym.lastPullAt';
@@ -56,6 +56,10 @@ type RemoteSet = {
   weight: number; reps: number; rir: number;
   completed_at: number; updated_at: number; deleted_at: number | null;
 };
+type RemoteBodyWeight = {
+  id: string; kg: number; notes: string | null;
+  created_at: number; updated_at: number; deleted_at: number | null;
+};
 
 const toRemoteEx = (e: Exercise) => ({
   id: e.id, name: e.name, muscle_group: e.muscleGroup, notes: e.notes ?? null,
@@ -104,16 +108,27 @@ const fromRemoteSet = (r: RemoteSet): SetEntry => ({
   deletedAt: r.deleted_at == null ? undefined : Number(r.deleted_at),
 });
 
+const toRemoteBW = (b: BodyWeight) => ({
+  id: b.id, kg: b.kg, notes: b.notes ?? null,
+  created_at: b.createdAt, updated_at: b.updatedAt, deleted_at: b.deletedAt ?? null,
+});
+const fromRemoteBW = (r: RemoteBodyWeight): BodyWeight => ({
+  id: r.id, kg: Number(r.kg), notes: r.notes ?? undefined,
+  createdAt: Number(r.created_at), updatedAt: Number(r.updated_at),
+  deletedAt: r.deleted_at == null ? undefined : Number(r.deleted_at),
+});
+
 // ---------- PUSH ----------
 
 async function pushAll(lastPushAt: number): Promise<number> {
   if (!supabase) return 0;
 
-  const [exercises, templates, sessions, sets] = await Promise.all([
+  const [exercises, templates, sessions, sets, bodyWeights] = await Promise.all([
     db.exercises.where('updatedAt').above(lastPushAt).toArray(),
     db.templates.where('updatedAt').above(lastPushAt).toArray(),
     db.sessions.where('updatedAt').above(lastPushAt).toArray(),
     db.sets.where('updatedAt').above(lastPushAt).toArray(),
+    db.bodyWeights.where('updatedAt').above(lastPushAt).toArray(),
   ]);
 
   let count = 0;
@@ -137,16 +152,21 @@ async function pushAll(lastPushAt: number): Promise<number> {
     if (error) throw error;
     count += sets.length;
   }
+  if (bodyWeights.length) {
+    const { error } = await supabase.from('body_weights').upsert(bodyWeights.map(toRemoteBW));
+    if (error) throw error;
+    count += bodyWeights.length;
+  }
   return count;
 }
 
 // ---------- PULL ----------
 
 async function pullTable<R, L extends { id: string; updatedAt: number }>(
-  table: 'exercises' | 'templates' | 'sessions' | 'sets',
+  table: 'exercises' | 'templates' | 'sessions' | 'sets' | 'body_weights',
   lastPullAt: number,
   map: (r: R) => L,
-  store: 'exercises' | 'templates' | 'sessions' | 'sets',
+  store: 'exercises' | 'templates' | 'sessions' | 'sets' | 'bodyWeights',
 ): Promise<number> {
   if (!supabase) return 0;
   const { data, error } = await supabase
@@ -171,13 +191,14 @@ async function pullTable<R, L extends { id: string; updatedAt: number }>(
 async function pullAll(lastPullAt: number): Promise<{ count: number; maxUpdatedAt: number }> {
   if (!supabase) return { count: 0, maxUpdatedAt: lastPullAt };
 
-  const [nEx, nTpl, nSess, nSet] = await Promise.all([
+  const [nEx, nTpl, nSess, nSet, nBW] = await Promise.all([
     pullTable<RemoteExercise, Exercise>('exercises', lastPullAt, fromRemoteEx, 'exercises'),
     pullTable<RemoteTemplate, WorkoutTemplate>('templates', lastPullAt, fromRemoteTpl, 'templates'),
     pullTable<RemoteSession, WorkoutSession>('sessions', lastPullAt, fromRemoteSess, 'sessions'),
     pullTable<RemoteSet, SetEntry>('sets', lastPullAt, fromRemoteSet, 'sets'),
+    pullTable<RemoteBodyWeight, BodyWeight>('body_weights', lastPullAt, fromRemoteBW, 'bodyWeights'),
   ]);
-  return { count: nEx + nTpl + nSess + nSet, maxUpdatedAt: Date.now() };
+  return { count: nEx + nTpl + nSess + nSet + nBW, maxUpdatedAt: Date.now() };
 }
 
 // ---------- SYNC NOW ----------

@@ -84,3 +84,22 @@ alter table public.sets enable row level security;
 drop policy if exists "sets_own" on public.sets;
 create policy "sets_own" on public.sets
   for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- ========== BODY WEIGHTS ==========
+-- id é YYYY-MM-DD (um peso por dia). PK simples como demais tabelas; RLS isola por usuário.
+create table if not exists public.body_weights (
+  id          text primary key,
+  user_id     uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  kg          numeric not null,
+  notes       text,
+  created_at  bigint not null,
+  updated_at  bigint not null,
+  deleted_at  bigint
+);
+create index if not exists body_weights_user_updated on public.body_weights(user_id, updated_at);
+
+alter table public.body_weights enable row level security;
+
+drop policy if exists "body_weights_own" on public.body_weights;
+create policy "body_weights_own" on public.body_weights
+  for all using (user_id = auth.uid()) with check (user_id = auth.uid());

@@ -2,6 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { db, dbHelpers } from '../db/db';
+import { MUSCLE_GROUP_LABELS } from '../db/schema';
 import { ExercisePicker } from '../components/ExercisePicker';
 
 export function TemplateEdit() {
@@ -77,7 +78,7 @@ export function TemplateEdit() {
             <li key={exId} className="card flex items-center gap-2">
               <div className="flex-1">
                 <div className="font-semibold">{ex?.name ?? '(removido)'}</div>
-                {ex && <div className="text-xs text-slate-400 capitalize">{ex.muscleGroup}</div>}
+                {ex && <div className="text-xs text-slate-400">{MUSCLE_GROUP_LABELS[ex.muscleGroup]}</div>}
               </div>
               <button className="btn-ghost text-sm" onClick={() => move(idx, -1)} disabled={idx === 0}>↑</button>
               <button className="btn-ghost text-sm" onClick={() => move(idx, 1)} disabled={idx === ids.length - 1}>↓</button>

@@ -182,7 +182,10 @@ function ExerciseDetail({
 
   return (
     <div className="fixed inset-0 bg-slate-950/90 backdrop-blur z-50 flex flex-col">
-      <header className="flex items-center justify-between p-4 border-b border-slate-800">
+      <header
+        className="flex items-center justify-between px-4 pb-3 border-b border-slate-800"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)' }}
+      >
         <div className="min-w-0 flex-1">
           <div className="font-bold truncate">{ex.name}</div>
           <div className="text-xs text-slate-400">{MUSCLE_GROUP_LABELS[ex.muscleGroup]}</div>
@@ -190,7 +193,10 @@ function ExerciseDetail({
         <button className="btn-ghost" onClick={onClose}>Fechar</button>
       </header>
 
-      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 max-w-xl w-full mx-auto">
+      <div
+        className="flex-1 overflow-y-auto px-4 pt-4 flex flex-col gap-4 max-w-xl w-full mx-auto"
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}
+      >
         <div className="card flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <span className="text-2xl" aria-hidden>{s.emoji}</span>
@@ -373,30 +379,32 @@ function BodyWeightCard({ entries }: { entries: Array<{ id: string; kg: number; 
 
       {series.length >= 2 && <BodyWeightSpark points={series} />}
 
-      <div className="flex gap-2 items-end">
-        <div className="flex flex-col gap-1 flex-1 min-w-0">
-          <label className="label">Peso (kg)</label>
-          <input
-            className="input"
-            type="number"
-            inputMode="decimal"
-            step="0.1"
-            placeholder="ex: 78.5"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-          />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className="label">Data</label>
-          <input
-            className="input"
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-          />
+      <div className="flex flex-col gap-2">
+        <div className="grid grid-cols-2 gap-2">
+          <div className="flex flex-col gap-1 min-w-0">
+            <label className="label">Peso (kg)</label>
+            <input
+              className="input"
+              type="number"
+              inputMode="decimal"
+              step="0.1"
+              placeholder="ex: 78.5"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+            />
+          </div>
+          <div className="flex flex-col gap-1 min-w-0">
+            <label className="label">Data</label>
+            <input
+              className="input w-full"
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+            />
+          </div>
         </div>
         <button
-          className="btn-primary"
+          className="btn-primary w-full"
           onClick={save}
           disabled={saving || !input}
         >

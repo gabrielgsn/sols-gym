@@ -16,6 +16,28 @@ input[type="number"]::-webkit-inner-spin-button {
   margin: 0;
 }
 
+/* iOS Safari ships type="date" with its own appearance, intrinsic min-height
+   and inner text alignment that breaks side-by-side layout. Normalize it. */
+input[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
+  min-height: 0;
+  line-height: 1.25rem;
+  font-family: inherit;
+  text-align: left;
+}
+input[type="date"]::-webkit-date-and-time-value {
+  text-align: left;
+  min-height: 1.25rem;
+  line-height: 1.25rem;
+}
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.7);
+  opacity: 0.7;
+  margin-left: 0.25rem;
+  padding: 0;
+}
+
 @layer components {
   .btn {
     @apply inline-flex items-center justify-center rounded-xl px-4 py-2 font-medium transition active:scale-95 disabled:opacity-50 disabled:pointer-events-none;

@@ -2,7 +2,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { db, dbHelpers } from '../db/db';
 import { MEAL_LABELS, type FoodEntry, type FoodItem, type MealLabel } from '../db/schema';
-import { estimateMealCalories, hasNvidiaKey } from '../lib/llm';
+import { estimateMealCalories } from '../lib/llm';
 import { todayYMD } from '../lib/analytics';
 
 function fmtDayHuman(ymd: string): string {
@@ -132,10 +132,6 @@ function MealLogger({ defaultDate }: { defaultDate: string }) {
 
   async function analyze() {
     if (!description.trim()) return;
-    if (!hasNvidiaKey()) {
-      setError('Configure a chave NVIDIA em Configurações → LLM.');
-      return;
-    }
     setError(null);
     setItems(null);
     setBusy(true);

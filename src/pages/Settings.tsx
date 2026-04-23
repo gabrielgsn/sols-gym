@@ -1,13 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { dbHelpers } from '../db/db';
 import { sendMagicLink, signOut, useAuth, verifyEmailOtp } from '../hooks/useAuth';
-import {
-  estimateMealCalories,
-  getNvidiaKey,
-  getNvidiaModel,
-  setNvidiaKey,
-  setNvidiaModel,
-} from '../lib/llm';
+import { estimateMealCalories, getNvidiaModel, setNvidiaModel } from '../lib/llm';
 import { onSyncStatus, resetSyncCursors, syncNow, type SyncStatus } from '../lib/sync';
 
 function fmtDate(ts?: number) {
@@ -229,32 +223,30 @@ export function Settings() {
 }
 
 function LlmSection() {
-  const [key, setKey] = useState('');
   const [model, setModel] = useState('');
-  const [showKey, setShowKey] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    setKey(getNvidiaKey());
     setModel(getNvidiaModel());
   }, []);
 
   function save() {
-    setNvidiaKey(key);
     setNvidiaModel(model);
-    setMsg('Salvo.');
+    setMsg('Modelo salvo.');
   }
 
   async function test() {
     setBusy(true);
     setMsg(null);
+    setNvidiaModel(model);
     try {
-      // Persist before testing so estimateMealCalories reads the new key/model
-      setNvidiaKey(key);
-      setNvidiaModel(model);
       const items = await estimateMealCalories('1 banana média');
-      setMsg(`OK — retornou ${items.length} item(ns). Ex: ${items[0].name} ~${items[0].kcal}kcal.`);
+      setMsg(
+        items.length > 0
+          ? `OK — ${items[0].name} ~${items[0].kcal}kcal.`
+          : 'OK — modelo respondeu, mas não retornou itens. Troque de modelo se continuar.',
+      );
     } catch (e) {
       setMsg(`Erro: ${e instanceof Error ? e.message : String(e)}`);
     } finally {
@@ -266,34 +258,10 @@ function LlmSection() {
     <section className="card flex flex-col gap-3">
       <h2 className="font-semibold">LLM (NVIDIA)</h2>
       <p className="text-xs text-slate-400">
-        Chave usada pela aba Comida pra parsear refeições via LLM.
-        Fica só neste dispositivo (localStorage). Pegue em{' '}
-        <a href="https://build.nvidia.com" target="_blank" rel="noreferrer" className="underline">
-          build.nvidia.com
-        </a>{' '}
-        (free tier).
+        Usado pela aba Comida pra parsear refeições. A chave NVIDIA fica no
+        servidor (Supabase Edge Function) — você só escolhe o modelo aqui.
+        Precisa estar logado pra chamar.
       </p>
-
-      <div className="flex flex-col gap-1">
-        <label className="label">Chave da API</label>
-        <div className="flex gap-2">
-          <input
-            className="input flex-1 font-mono text-xs"
-            type={showKey ? 'text' : 'password'}
-            placeholder="nvapi-..."
-            autoComplete="off"
-            value={key}
-            onChange={(e) => setKey(e.target.value)}
-          />
-          <button
-            className="btn-ghost text-xs"
-            onClick={() => setShowKey((v) => !v)}
-            type="button"
-          >
-            {showKey ? 'Ocultar' : 'Mostrar'}
-          </button>
-        </div>
-      </div>
 
       <div className="flex flex-col gap-1">
         <label className="label">Modelo</label>
@@ -305,7 +273,8 @@ function LlmSection() {
           onChange={(e) => setModel(e.target.value)}
         />
         <p className="text-[10px] text-slate-500">
-          Default: moonshotai/kimi-k2-thinking. Use qualquer model id do catálogo NVIDIA.
+          Default: moonshotai/kimi-k2-thinking. Qualquer model id do catálogo
+          NVIDIA serve (meta/llama-3.3-70b-instruct é mais rápido).
         </p>
       </div>
 
@@ -313,7 +282,7 @@ function LlmSection() {
         <button className="btn-primary flex-1" onClick={save} disabled={busy}>
           Salvar
         </button>
-        <button className="btn-ghost flex-1" onClick={test} disabled={busy || !key.trim()}>
+        <button className="btn-ghost flex-1" onClick={test} disabled={busy}>
           {busy ? 'Testando…' : 'Testar'}
         </button>
       </div>

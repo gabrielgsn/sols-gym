@@ -1,5 +1,6 @@
 import { useLiveQuery } from 'dexie-react-hooks';
 import { useNavigate } from 'react-router-dom';
+import { AsciiBanner } from '../components/AsciiBanner';
 import { db, dbHelpers } from '../db/db';
 
 export function Home() {
@@ -32,8 +33,8 @@ export function Home() {
 
   return (
     <div className="flex flex-col gap-4">
-      <header>
-        <h1 className="text-2xl font-bold">Sols Gym</h1>
+      <header className="flex flex-col items-center gap-1">
+        <AsciiBanner />
         <p className="text-sm text-slate-400">Bora treinar?</p>
       </header>
 

@@ -30,7 +30,10 @@ export function ExercisePicker({ selectedIds, onToggle, onClose }: Props) {
 
   return (
     <div className="fixed inset-0 bg-slate-950/90 backdrop-blur z-50 flex flex-col">
-      <div className="px-4 pt-4 pb-3 border-b border-slate-800 flex items-center gap-2">
+      <div
+        className="px-4 pb-3 border-b border-slate-800 flex items-center gap-2"
+        style={{ paddingTop: 'calc(env(safe-area-inset-top) + 0.75rem)' }}
+      >
         <input
           autoFocus
           className="input flex-1"
@@ -40,7 +43,10 @@ export function ExercisePicker({ selectedIds, onToggle, onClose }: Props) {
         />
         <button className="btn-ghost" onClick={onClose}>Fechar</button>
       </div>
-      <div className="flex-1 overflow-y-auto px-4 py-2">
+      <div
+        className="flex-1 overflow-y-auto px-4 py-2"
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 1rem)' }}
+      >
         {filtered.length === 0 && (
           <p className="text-slate-500 text-center py-8 text-sm">
             Nenhum exercício. Cadastre na aba Exerc.

@@ -39,7 +39,15 @@ export async function estimateMealCalories(
   if (!desc) throw new Error('Descrição vazia');
   if (!supabase) throw new Error('Supabase não configurado');
 
-  const { data: { session } } = await supabase.auth.getSession();
+  let { data: { session } } = await supabase.auth.getSession();
+  // Force refresh if token is near expiry (<60s) — avoids stale-JWT 401.
+  const exp = session?.expires_at ?? 0;
+  const nowSec = Math.floor(Date.now() / 1000);
+  if (session && exp && exp - nowSec < 60) {
+    const { data, error } = await supabase.auth.refreshSession();
+    if (error) throw new Error(`Sessão expirada. Saia e entre de novo. (${error.message})`);
+    session = data.session;
+  }
   if (!session?.access_token) {
     throw new Error('Faça login na aba Configurações antes de analisar refeições.');
   }
@@ -67,10 +75,16 @@ export async function estimateMealCalories(
       signal: controller.signal,
     });
 
-    const body = await res.json().catch(() => ({} as Record<string, unknown>));
+    const rawText = await res.text();
+    let body: Record<string, unknown> = {};
+    try { body = rawText ? JSON.parse(rawText) : {}; } catch { /* keep empty */ }
     if (!res.ok) {
-      const msg = typeof body?.error === 'string' ? body.error : `HTTP ${res.status}`;
-      throw new Error(msg);
+      const err =
+        (typeof body?.error === 'string' && body.error) ||
+        (typeof body?.message === 'string' && body.message) ||
+        rawText.slice(0, 200) ||
+        `HTTP ${res.status}`;
+      throw new Error(`HTTP ${res.status}: ${err}`);
     }
     const items = (body as { items?: unknown }).items;
     if (!Array.isArray(items)) throw new Error('Resposta sem campo "items"');

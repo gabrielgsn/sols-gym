@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie';
-import type { BodyWeight, Exercise, SetEntry, WorkoutSession, WorkoutTemplate } from './schema';
+import type { BodyWeight, Exercise, FoodEntry, FoodItem, SetEntry, WorkoutSession, WorkoutTemplate } from './schema';
 import { uid } from '../lib/id';
 
 class SolsGymDB extends Dexie {
@@ -8,6 +8,7 @@ class SolsGymDB extends Dexie {
   sessions!: Table<WorkoutSession, string>;
   sets!: Table<SetEntry, string>;
   bodyWeights!: Table<BodyWeight, string>;
+  foodEntries!: Table<FoodEntry, string>;
 
   constructor() {
     super('sols-gym');
@@ -67,6 +68,9 @@ class SolsGymDB extends Dexie {
           }
         });
       });
+    this.version(5).stores({
+      foodEntries: 'id, date, updatedAt, deletedAt',
+    });
   }
 }
 
@@ -173,6 +177,41 @@ export const dbHelpers = {
     return db.sets.update(id, { deletedAt: now(), updatedAt: now() });
   },
 
+  async addFoodEntry(input: {
+    date: string;
+    mealLabel?: FoodEntry['mealLabel'];
+    description: string;
+    items: FoodItem[];
+  }): Promise<FoodEntry> {
+    const ts = now();
+    const totalKcal = input.items.reduce((s, i) => s + (Number(i.kcal) || 0), 0);
+    const e: FoodEntry = {
+      id: uid(),
+      date: input.date,
+      mealLabel: input.mealLabel,
+      description: input.description,
+      items: input.items,
+      totalKcal,
+      createdAt: ts,
+      updatedAt: ts,
+    };
+    await db.foodEntries.add(e);
+    return e;
+  },
+  async updateFoodEntry(
+    id: string,
+    patch: Partial<Pick<FoodEntry, 'date' | 'mealLabel' | 'description' | 'items'>>,
+  ): Promise<void> {
+    const next: Partial<FoodEntry> = { ...patch, updatedAt: now() };
+    if (patch.items) {
+      next.totalKcal = patch.items.reduce((s, i) => s + (Number(i.kcal) || 0), 0);
+    }
+    await db.foodEntries.update(id, next);
+  },
+  deleteFoodEntry(id: string) {
+    return db.foodEntries.update(id, { deletedAt: now(), updatedAt: now() });
+  },
+
   async upsertBodyWeight(input: { date: string; kg: number; notes?: string }): Promise<BodyWeight> {
     const ts = now();
     const existing = await db.bodyWeights.get(input.date);
@@ -201,15 +240,20 @@ export const dbHelpers = {
   },
 
   async exportJSON(): Promise<string> {
-    const [exercises, templates, sessions, sets, bodyWeights] = await Promise.all([
+    const [exercises, templates, sessions, sets, bodyWeights, foodEntries] = await Promise.all([
       db.exercises.toArray(),
       db.templates.toArray(),
       db.sessions.toArray(),
       db.sets.toArray(),
       db.bodyWeights.toArray(),
+      db.foodEntries.toArray(),
     ]);
     return JSON.stringify(
-      { version: 3, exportedAt: Date.now(), exercises, templates, sessions, sets, bodyWeights },
+      {
+        version: 4,
+        exportedAt: Date.now(),
+        exercises, templates, sessions, sets, bodyWeights, foodEntries,
+      },
       null,
       2,
     );
@@ -217,24 +261,30 @@ export const dbHelpers = {
 
   async importJSON(raw: string): Promise<void> {
     const data = JSON.parse(raw);
-    if (!data || ![1, 2, 3].includes(data.version)) throw new Error('Formato inválido');
+    if (!data || ![1, 2, 3, 4].includes(data.version)) throw new Error('Formato inválido');
     const ts = now();
     const patchTs = <T extends { updatedAt?: number; createdAt?: number }>(arr: T[]): T[] =>
       arr.map((r) => ({ ...r, updatedAt: r.updatedAt ?? r.createdAt ?? ts }));
-    await db.transaction('rw', [db.exercises, db.templates, db.sessions, db.sets, db.bodyWeights], async () => {
-      await Promise.all([
-        db.exercises.clear(),
-        db.templates.clear(),
-        db.sessions.clear(),
-        db.sets.clear(),
-        db.bodyWeights.clear(),
-      ]);
-      await db.exercises.bulkAdd(patchTs(data.exercises ?? []));
-      await db.templates.bulkAdd(patchTs(data.templates ?? []));
-      await db.sessions.bulkAdd(patchTs(data.sessions ?? []));
-      await db.sets.bulkAdd(patchTs(data.sets ?? []));
-      await db.bodyWeights.bulkAdd(patchTs(data.bodyWeights ?? []));
-    });
+    await db.transaction(
+      'rw',
+      [db.exercises, db.templates, db.sessions, db.sets, db.bodyWeights, db.foodEntries],
+      async () => {
+        await Promise.all([
+          db.exercises.clear(),
+          db.templates.clear(),
+          db.sessions.clear(),
+          db.sets.clear(),
+          db.bodyWeights.clear(),
+          db.foodEntries.clear(),
+        ]);
+        await db.exercises.bulkAdd(patchTs(data.exercises ?? []));
+        await db.templates.bulkAdd(patchTs(data.templates ?? []));
+        await db.sessions.bulkAdd(patchTs(data.sessions ?? []));
+        await db.sets.bulkAdd(patchTs(data.sets ?? []));
+        await db.bodyWeights.bulkAdd(patchTs(data.bodyWeights ?? []));
+        await db.foodEntries.bulkAdd(patchTs(data.foodEntries ?? []));
+      },
+    );
   },
 };
 
@@ -245,4 +295,5 @@ export const qry = {
   sessions: () => db.sessions.filter((s) => !s.deletedAt),
   sets: () => db.sets.filter((s) => !s.deletedAt),
   bodyWeights: () => db.bodyWeights.filter((b) => !b.deletedAt),
+  foodEntries: () => db.foodEntries.filter((f) => !f.deletedAt),
 };

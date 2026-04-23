@@ -8,6 +8,7 @@ import { Exercises } from './pages/Exercises';
 import { ActiveWorkout } from './pages/ActiveWorkout';
 import { History } from './pages/History';
 import { Progress } from './pages/Progress';
+import { Food } from './pages/Food';
 import { Settings } from './pages/Settings';
 import { ensureSeed } from './db/db';
 import { useAuth } from './hooks/useAuth';
@@ -43,6 +44,7 @@ export default function App() {
         <Route path="/workout/:id" element={<ActiveWorkout />} />
         <Route path="/history" element={<History />} />
         <Route path="/progress" element={<Progress />} />
+        <Route path="/food" element={<Food />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

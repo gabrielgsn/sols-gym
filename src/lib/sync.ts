@@ -1,5 +1,8 @@
 import { db } from '../db/db';
-import type { BodyWeight, Exercise, SetEntry, WorkoutSession, WorkoutTemplate } from '../db/schema';
+import type {
+  BodyWeight, Exercise, FoodEntry, FoodItem, MealLabel,
+  SetEntry, WorkoutSession, WorkoutTemplate,
+} from '../db/schema';
 import { supabase } from './supabase';
 
 const LAST_PULL_KEY = 'sols-gym.lastPullAt';
@@ -60,6 +63,15 @@ type RemoteBodyWeight = {
   id: string; kg: number; notes: string | null;
   created_at: number; updated_at: number; deleted_at: number | null;
 };
+type RemoteFoodEntry = {
+  id: string;
+  date: string;
+  meal_label: string | null;
+  description: string;
+  items: FoodItem[];
+  total_kcal: number;
+  created_at: number; updated_at: number; deleted_at: number | null;
+};
 
 const toRemoteEx = (e: Exercise) => ({
   id: e.id, name: e.name, muscle_group: e.muscleGroup, notes: e.notes ?? null,
@@ -118,17 +130,39 @@ const fromRemoteBW = (r: RemoteBodyWeight): BodyWeight => ({
   deletedAt: r.deleted_at == null ? undefined : Number(r.deleted_at),
 });
 
+const toRemoteFE = (e: FoodEntry) => ({
+  id: e.id,
+  date: e.date,
+  meal_label: e.mealLabel ?? null,
+  description: e.description,
+  items: e.items,
+  total_kcal: e.totalKcal,
+  created_at: e.createdAt, updated_at: e.updatedAt, deleted_at: e.deletedAt ?? null,
+});
+const fromRemoteFE = (r: RemoteFoodEntry): FoodEntry => ({
+  id: r.id,
+  date: r.date,
+  mealLabel: (r.meal_label ?? undefined) as MealLabel | undefined,
+  description: r.description,
+  items: Array.isArray(r.items) ? r.items : [],
+  totalKcal: Number(r.total_kcal),
+  createdAt: Number(r.created_at),
+  updatedAt: Number(r.updated_at),
+  deletedAt: r.deleted_at == null ? undefined : Number(r.deleted_at),
+});
+
 // ---------- PUSH ----------
 
 async function pushAll(lastPushAt: number): Promise<number> {
   if (!supabase) return 0;
 
-  const [exercises, templates, sessions, sets, bodyWeights] = await Promise.all([
+  const [exercises, templates, sessions, sets, bodyWeights, foodEntries] = await Promise.all([
     db.exercises.where('updatedAt').above(lastPushAt).toArray(),
     db.templates.where('updatedAt').above(lastPushAt).toArray(),
     db.sessions.where('updatedAt').above(lastPushAt).toArray(),
     db.sets.where('updatedAt').above(lastPushAt).toArray(),
     db.bodyWeights.where('updatedAt').above(lastPushAt).toArray(),
+    db.foodEntries.where('updatedAt').above(lastPushAt).toArray(),
   ]);
 
   let count = 0;
@@ -157,16 +191,21 @@ async function pushAll(lastPushAt: number): Promise<number> {
     if (error) throw error;
     count += bodyWeights.length;
   }
+  if (foodEntries.length) {
+    const { error } = await supabase.from('food_entries').upsert(foodEntries.map(toRemoteFE));
+    if (error) throw error;
+    count += foodEntries.length;
+  }
   return count;
 }
 
 // ---------- PULL ----------
 
 async function pullTable<R, L extends { id: string; updatedAt: number }>(
-  table: 'exercises' | 'templates' | 'sessions' | 'sets' | 'body_weights',
+  table: 'exercises' | 'templates' | 'sessions' | 'sets' | 'body_weights' | 'food_entries',
   lastPullAt: number,
   map: (r: R) => L,
-  store: 'exercises' | 'templates' | 'sessions' | 'sets' | 'bodyWeights',
+  store: 'exercises' | 'templates' | 'sessions' | 'sets' | 'bodyWeights' | 'foodEntries',
 ): Promise<number> {
   if (!supabase) return 0;
   const { data, error } = await supabase
@@ -191,14 +230,15 @@ async function pullTable<R, L extends { id: string; updatedAt: number }>(
 async function pullAll(lastPullAt: number): Promise<{ count: number; maxUpdatedAt: number }> {
   if (!supabase) return { count: 0, maxUpdatedAt: lastPullAt };
 
-  const [nEx, nTpl, nSess, nSet, nBW] = await Promise.all([
+  const [nEx, nTpl, nSess, nSet, nBW, nFE] = await Promise.all([
     pullTable<RemoteExercise, Exercise>('exercises', lastPullAt, fromRemoteEx, 'exercises'),
     pullTable<RemoteTemplate, WorkoutTemplate>('templates', lastPullAt, fromRemoteTpl, 'templates'),
     pullTable<RemoteSession, WorkoutSession>('sessions', lastPullAt, fromRemoteSess, 'sessions'),
     pullTable<RemoteSet, SetEntry>('sets', lastPullAt, fromRemoteSet, 'sets'),
     pullTable<RemoteBodyWeight, BodyWeight>('body_weights', lastPullAt, fromRemoteBW, 'bodyWeights'),
+    pullTable<RemoteFoodEntry, FoodEntry>('food_entries', lastPullAt, fromRemoteFE, 'foodEntries'),
   ]);
-  return { count: nEx + nTpl + nSess + nSet + nBW, maxUpdatedAt: Date.now() };
+  return { count: nEx + nTpl + nSess + nSet + nBW + nFE, maxUpdatedAt: Date.now() };
 }
 
 // ---------- SYNC NOW ----------

@@ -103,3 +103,26 @@ alter table public.body_weights enable row level security;
 drop policy if exists "body_weights_own" on public.body_weights;
 create policy "body_weights_own" on public.body_weights
   for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- ========== FOOD ENTRIES ==========
+-- One row per logged meal. `items` is a JSON array of { name, kcal, protein?, carbs?, fat? }.
+create table if not exists public.food_entries (
+  id           text primary key,
+  user_id      uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  date         text not null,                -- YYYY-MM-DD
+  meal_label   text,
+  description  text not null,
+  items        jsonb not null default '[]'::jsonb,
+  total_kcal   numeric not null default 0,
+  created_at   bigint not null,
+  updated_at   bigint not null,
+  deleted_at   bigint
+);
+create index if not exists food_entries_user_updated on public.food_entries(user_id, updated_at);
+create index if not exists food_entries_user_date on public.food_entries(user_id, date);
+
+alter table public.food_entries enable row level security;
+
+drop policy if exists "food_entries_own" on public.food_entries;
+create policy "food_entries_own" on public.food_entries
+  for all using (user_id = auth.uid()) with check (user_id = auth.uid());

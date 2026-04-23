@@ -82,3 +82,30 @@ export interface BodyWeight {
   updatedAt: number;
   deletedAt?: number;
 }
+
+// ---------- FOOD / CALORIES ----------
+
+// One parsed food item inside a meal. Macros optional; kcal required.
+export interface FoodItem {
+  name: string;      // "250g carne bovina"
+  kcal: number;
+  protein?: number;  // grams
+  carbs?: number;    // grams
+  fat?: number;      // grams
+}
+
+export const MEAL_LABELS = ['café', 'lanche', 'almoço', 'jantar', 'ceia'] as const;
+export type MealLabel = typeof MEAL_LABELS[number];
+
+// One logged meal. Multiple per day allowed.
+export interface FoodEntry {
+  id: string;                // uuid
+  date: string;              // YYYY-MM-DD
+  mealLabel?: MealLabel;
+  description: string;       // user's raw natural-language description
+  items: FoodItem[];         // LLM parse, editable
+  totalKcal: number;         // cached sum(items.kcal)
+  createdAt: number;
+  updatedAt: number;
+  deletedAt?: number;
+}

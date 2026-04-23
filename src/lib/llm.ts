@@ -6,7 +6,7 @@ import { supabase, supabaseAnonKey, supabaseConfigured, supabaseUrl } from './su
 // NVIDIA API key in the bundle. The function holds NVIDIA_API_KEY as a
 // server-side secret and requires a logged-in Supabase user (JWT verify).
 
-const DEFAULT_MODEL = 'moonshotai/kimi-k2-thinking';
+const DEFAULT_MODEL = 'google/gemma-3n-e4b-it';
 const MODEL_STORAGE = 'sols-gym.nvidia_model';
 const DEFAULT_TIMEOUT_MS = 90_000;
 const FUNCTION_PATH = '/functions/v1/estimate-calories';

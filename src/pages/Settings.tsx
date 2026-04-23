@@ -268,13 +268,14 @@ function LlmSection() {
         <input
           className="input font-mono text-xs"
           type="text"
-          placeholder="moonshotai/kimi-k2-thinking"
+          placeholder="google/gemma-3n-e4b-it"
           value={model}
           onChange={(e) => setModel(e.target.value)}
         />
         <p className="text-[10px] text-slate-500">
-          Default: moonshotai/kimi-k2-thinking. Qualquer model id do catálogo
-          NVIDIA serve (meta/llama-3.3-70b-instruct é mais rápido).
+          Default: google/gemma-3n-e4b-it (rápido). Qualquer model id do
+          catálogo NVIDIA serve — moonshotai/kimi-k2-thinking se quiser
+          reasoning model (mais lento, mais preciso).
         </p>
       </div>
 

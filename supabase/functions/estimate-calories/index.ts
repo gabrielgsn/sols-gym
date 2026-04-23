@@ -21,7 +21,7 @@ type FoodItem = {
 };
 
 const NVIDIA_BASE = 'https://integrate.api.nvidia.com/v1';
-const DEFAULT_MODEL = 'moonshotai/kimi-k2-thinking';
+const DEFAULT_MODEL = 'google/gemma-3n-e4b-it';
 
 const SYSTEM_PROMPT = `Você é um analista nutricional. Recebe descrição de refeição em português.
 Retorna APENAS JSON válido, sem prosa, sem markdown, sem code fences.
@@ -144,9 +144,9 @@ Deno.serve(async (req: Request) => {
           { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user', content: description },
         ],
-        temperature: 0.4,
-        top_p: 0.9,
-        max_tokens: 4096,
+        temperature: 0.2,
+        top_p: 0.7,
+        max_tokens: 1024,
         stream: false,
       }),
     });
